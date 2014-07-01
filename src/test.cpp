@@ -1,9 +1,37 @@
+#include "EMSSystem.h"
+
+#define BAUD_RATE 115200
+
+uint pins[2][3] = {{5, 4, 10}, {3, 2, 9}};
+uint pinWifi[2] = {6, 7};
+
+EMS::System* system;
+
+void setup(){
+	SPI.begin();
+
+	Serial.begin(BAUD_RATE);
+	system = new EMS::System(2, pins, pinWifi);
+	if(system->enableConnection("Hci-Fi-2", "forpeoplevery")){
+		Serial.println("Connection established, have fun");
+	}else{
+		Serial.println(":(");
+	}
+}
+
+void loop(){
+	system->update();
+}
+
+
+/*
 #include <SoftwareSerial.h>
 SoftwareSerial wifiSerial(6, 7);
 
 #include <SmartEMSChannel.h>
 SmartEMSChannel channel1(5, 4, 10);
 SmartEMSChannel channel2(3, 2, 9);
+SmartEMSChannel* currentChannel = &channel2;
 
 #include <WiFlyHQ.h>
 #include <SPI.h>
@@ -11,10 +39,8 @@ SmartEMSChannel channel2(3, 2, 9);
 #include <stdio.h>
 #include <string.h>
 #include <McpDigitalPot.h>
-#include <EMSChannel.h>
+#include <EMSSystem.h>
 
-
-// Blank due to security reasons
 const char ssid[] = "Hci-Fi-2";
 const char password[] = "forpeoplevery";
 
@@ -30,15 +56,11 @@ WiFly wifly;
 #define OPT2_1 3
 #define OPT2_2 2
 
-#define BAUD_RATE 115200
 
-enum MessageType{
-  UNDEFINED,
-  INTENSITY,
-  CHANNEL,
-  STEPTIME,
-  ONTIME
-};
+
+typedef unsigned char uchar;
+
+
 
 
 void setupWifi(){
@@ -49,7 +71,6 @@ void setupWifi(){
     }
 
     if (!wifly.isAssociated()) {
-	/* Setup the WiFly to connect to a wifi network */
 	Serial.println("Joining network");
 	wifly.setSSID(ssid);
 	wifly.setPassphrase(password);
@@ -68,7 +89,6 @@ void setupWifi(){
     wifly.getIP(buf, sizeof(buf));
     Serial.println(buf);
 
-    /* Setup for UDP packets, sent automatically */
     wifly.setIpProtocol(WIFLY_PROTOCOL_UDP);
 
     // Send UDP packet to this server and port
@@ -84,18 +104,16 @@ void setup()
 {
 	SPI.begin();
 
-	channel1.setStepTime(10);
-	channel1.setIntensityChangeFactor(1);
+	//channel1.setStepTime(10);
 	channel1.on();
 
-	channel2.setStepTime(10);
-	channel2.setIntensityChangeFactor(1);
+	//channel2.setStepTime(10);
 	channel2.on();
 
     Serial.begin(BAUD_RATE);
-    Serial.println("Ready for Eclipse");
 
-    channel2.setIntensity(127);
+    setupWifi();
+    Serial.println("Ready for Eclipse");
 }
 
 
@@ -103,101 +121,154 @@ void sendMessage(char* msg){
    wifly.println(msg);
 }
 
-bool splitMessage(String message){
-	int i = message.indexOf('I');
-	if(i == -1)i = message.indexOf('i');
-    if(i == -1)return false;
-
-    int c = message.indexOf('C');
-    if(c == -1) c = message.indexOf('c');
-    if(c == -1) return false;
-
-    int s = message.indexOf('S');
-    if(s == -1) s = message.indexOf('s');
-    if(s == -1) return false;
-
-    int t = message.indexOf('T');
-    if(t == -1) t = message.indexOf('t');
-    if(t == -1) return false;
-
-    if(!((i < c) && (c < s) && (s < t))) return false;
-    int iValue = message.substring(i+1, c).toInt();
-    int cValue = message.substring(c+1, s).toInt();
-    int sValue = message.substring(s+1, t).toInt();
-    int tValue = message.substring(t+1, message.length()).toInt();
-
-   // Serial.println(iValue);
-  //  Serial.println(cValue);
-  // Serial.println(sValue);
-  //  Serial.println(tValue);
-
-    if(cValue == 0){
-    	Serial.println("Channel 1 changed:");
-    	channel1.setIntensity(iValue);
-    	channel1.setStepTime(sValue);
-    }else if(cValue == 1){
-    	Serial.println("Channel 2 changed:");
-    	channel2.setIntensity(iValue);
-    	channel2.setStepTime(sValue);
-    }else{
-    	Serial.println("Selected Channel is not available in this sketch.");
-    }
-
-	Serial.print("Intensity:\t");
-	Serial.println(iValue);
-	Serial.print("StepTime:\t");
-	Serial.println(sValue);
-
-
-
-	return true;
-}
-
-
 bool increase = true;
+
+bool option = false;
+int parameter = -1;
+
+String value;
+String opt ="";
 void loop()
 {
-    // prints messages send to the arduino board
+	char b;
+	if(wifly.available() > 0){
+		b = (char)wifly.read();
 
-	/*
-	if(wifly.available()){
-		String udpPackage = "";
-		while(wifly.available()){
-			udpPackage += (char)wifly.read();
-			delay(10);
+		switch(parameter){
+			case PARAM_UNKNOWN:
+				break;
+			case PARAM_INTENSITY:
+				if(b >= 48 && b <=57){
+					value += b;
+				}else{
+					Serial.println("SET I");
+					currentChannel->setIntensity(value.toInt());
+					value = "";
+					parameter = PARAM_UNKNOWN;
+				}
+				break;
+			case PARAM_CHANNEL:
+				if(b >= 48 && b <=57){
+					value += b;
+				}else{
+					if(value.toInt() == 0){
+						currentChannel = &channel1;
+					}else{
+						currentChannel = &channel2;
+					}
+
+					value = "";
+					parameter = PARAM_UNKNOWN;
+				}
+				break;
+			case PARAM_ON_TIME:
+				break;
+			case PARAM_DEVICE:
+				break;
+			case PARAM_IP:
+				break;
+			case PARAM_SSID:
+				break;
+			case PARAM_SYNC:
+				break;
+			case PARAM_ON_OFF:
+				if(b >= 48 && b <=57){
+					value += b;
+				}else{
+					if(value.toInt() == 0)
+						currentChannel->off();
+					else
+						currentChannel->on();
+
+					value = "";
+					parameter = PARAM_UNKNOWN;
+				}
+				break;
+			case PARAM_FREQUENCY:
+				break;
+			case PARAM_MIN_CHANGE_TIME:
+				if(b >= 48 && b <=57){
+					value += b;
+				}else{
+					currentChannel->setMinChangeTime(value.toInt());
+
+					value = "";
+					parameter = PARAM_UNKNOWN;
+				}
+
+				break;
+			case PARAM_MIN_CALIBRATION:
+				break;
+			case PARAM_MAX_CALIBRATION:
+				break;
 		}
-		delay(200);
-		//Serial.println(udpPackage);
-		splitMessage(udpPackage);
+
+
+		if(!option){
+			if(b == 'I'){
+				parameter = PARAM_INTENSITY;
+			}
+			if(b == 'C'){
+				parameter = PARAM_CHANNEL;
+			}
+			if(b == 'T'){
+				parameter = ON_TIME;
+			}
+			if(b == '_'){
+				option = true;
+			}
+		}else{
+			if(b >= 48 && b <=57){
+				opt="";
+				option = false;
+			}else{
+				opt+=b;
+			}
+
+			if(opt == "DE"){
+				parameter = PARAM_DEVICE;
+				opt="";
+			}
+			if(opt == "IP"){
+				parameter = PARAM_IP;
+				opt="";
+			}
+			if(opt == "SS"){
+				parameter = PARAM_SSID;
+				opt="";
+			}
+			if(opt == "OO"){
+				parameter = PARAM_ON_OFF;
+				opt="";
+			}
+			if(opt == "FR"){
+				parameter = PARAM_FREQUENCY;
+				opt="";
+			}
+			if(opt == "CT"){
+				parameter = PARAM_MIN_CHANGE_TIME;
+				opt="";
+			}
+			if(opt == "MI"){
+				parameter = PARAM_MIN_CALIBRATION;
+				opt="";
+			}
+			if(opt == "MA"){
+				parameter = PARAM_MAX_CALIBRATION;
+				opt="";
+			}
+		}
+
+
+
+		// needed delay, see http://forum.arduino.cc/index.php/topic,48103.0.html
+		// for more details
+		delay(1);
 	}
-	*/
 
 
 
-    //splitMessage();
-    if(increase){
-    	channel2.increase();
-	}else{
-    	channel2.decrease();
-    }
+	currentChannel->update();
 
-    if(channel2.getIntensity() >= 127)
-    	increase = false;
-    if(channel2.getIntensity() == 0)
-    	increase = true;
-
-    // only send messages to the user after user input
-    if (Serial.available()) {
-        const char c = Serial.read();
-
-
-        if (c == '1') {
-        	channel2.start();
-        } else if (c == '2') {
-        	channel2.off();
-        } else if (c == '3') {
-        }
-    }
-
-    channel2.update();
 }
+*/

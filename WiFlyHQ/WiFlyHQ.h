@@ -116,7 +116,7 @@
 #define WIFLY_WLAN_JOIN_ANY		0x02	/* Ignore SSID and join strongest network using passkey. */
 #define WIFLY_WLAN_JOIN_ADHOC		0x04	/* Create an Adhoc network using SSID, Channel, IP and NetMask */
 
-#define WIFLY_DEFAULT_TIMEOUT		500	/* 500 milliseconds */
+#define WIFLY_DEFAULT_TIMEOUT		5	/* 500 milliseconds */
 
 #define WIFLY_MODE_WPA			0	
 #define WIFLY_MODE_WEP			1

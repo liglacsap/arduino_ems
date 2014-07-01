@@ -27,9 +27,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>EMSChannel</name>
+			<name>EMSSystem</name>
 			<type>2</type>
-			<locationURI>testEMSChannel/EMSChannel</locationURI>
+			<locationURI>testEMSSystem/EMSSystem</locationURI>
 		</link>
 		<link>
 			<name>SmartEMSChannel</name>
