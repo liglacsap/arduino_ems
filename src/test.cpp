@@ -2,7 +2,7 @@
 
 #define BAUD_RATE 115200
 
-uint pins[2][3] = {{5, 4, 10}, {3, 2, 9}};
+uint pins[2][3] = {{5, 4, 10}, {2, 3, 9}};
 uint pinWifi[2] = {6, 7};
 
 EMS::System* system;

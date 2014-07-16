@@ -17,6 +17,9 @@ System::System(uint numChannel, uint pins[][3], uint pinWifly[2]) {
 		channel[i]->on();
 	}
 
+	channel[0]->setRealIntensity(127);
+	channel[1]->setRealIntensity(127);
+
 	this->numChannel = numChannel;
 
 	currentChannel = 0;
@@ -39,6 +42,8 @@ void System::parseMessage(){
 	if(wifly.available() > 0){
 		b = (char)wifly.read();
 
+		Serial.println(b);
+
 		switch(parameter){
 			case PARAM_UNKNOWN:
 				break;
@@ -47,7 +52,6 @@ void System::parseMessage(){
 					value += b;
 				}else{
 					channel[currentChannel]->setIntensity(value.toInt());
-					//channel[1]->setRealIntensity(value.toInt());
 					value = "";
 					parameter = PARAM_UNKNOWN;
 				}
@@ -76,10 +80,16 @@ void System::parseMessage(){
 				if(b >= 48 && b <=57){
 					value += b;
 				}else{
-					if(value.toInt() == 0)
+					Serial.print("Channel ");
+					Serial.print(currentChannel+1);
+
+					if(value.toInt() == 0){
 						channel[currentChannel]->off();
-					else
+						Serial.print(" off\n");
+					}else{
 						channel[currentChannel]->on();
+						Serial.print(" on\n");
+					}
 
 					value = "";
 					parameter = PARAM_UNKNOWN;
@@ -91,9 +101,9 @@ void System::parseMessage(){
 				if(b >= 48 && b <=57){
 					value += b;
 				}else{
-					//Serial.print("Changed: MinChangeTime to ");
-					//Serial.print(value.toInt());
-					//Serial.print("\n");
+					Serial.print("Changed: MinChangeTime to ");
+					Serial.print(value.toInt());
+					Serial.print("\n");
 
 					channel[currentChannel]->setMinChangeTime(value.toInt());
 
@@ -177,7 +187,7 @@ void System::update(){
 
 
 	for(uint i=0; i<2; i++){
-		channel[i]->update();
+	//	channel[i]->update();
 	}
 }
 const char* System::getIPAddress(){
