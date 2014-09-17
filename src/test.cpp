@@ -2,8 +2,8 @@
 
 #define BAUD_RATE 115200
 
-uint pins[2][3] = {{5, 4, 10}, {2, 3, 9}};
-uint pinWifi[2] = {6, 7};
+uint pins[2][3] = {{8, 9, 10}, {5, 6, 7}};
+uint pinWifi[2] = {3, 4};
 
 EMS::System* system;
 
@@ -12,7 +12,7 @@ void setup(){
 
 	Serial.begin(BAUD_RATE);
 	system = new EMS::System(2, pins, pinWifi);
-	if(system->enableConnection("Hci-Fi-2", "forpeoplevery")){
+	if(system->enableConnection("192.168.3.9", "Hci-Fi-2", "forpeoplevery")){
 		Serial.println("Connection established, have fun");
 	}else{
 		Serial.println(":(");

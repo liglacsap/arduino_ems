@@ -17,8 +17,6 @@ System::System(uint numChannel, uint pins[][3], uint pinWifly[2]) {
 		channel[i]->on();
 	}
 
-	channel[0]->setRealIntensity(127);
-	channel[1]->setRealIntensity(127);
 
 	this->numChannel = numChannel;
 
@@ -39,10 +37,9 @@ System::~System() {
 
 void System::parseMessage(){
 	char b;
+
 	if(wifly.available() > 0){
 		b = (char)wifly.read();
-
-		Serial.println(b);
 
 		switch(parameter){
 			case PARAM_UNKNOWN:
@@ -51,6 +48,8 @@ void System::parseMessage(){
 				if(b >= 48 && b <=57){
 					value += b;
 				}else{
+					Serial.print("Intensity ");
+					Serial.print(value);
 					channel[currentChannel]->setIntensity(value.toInt());
 					value = "";
 					parameter = PARAM_UNKNOWN;
@@ -121,6 +120,7 @@ void System::parseMessage(){
 
 		if(!option){
 			if(b == 'I'){
+
 				parameter = PARAM_INTENSITY;
 			}
 			if(b == 'C'){
@@ -187,13 +187,13 @@ void System::update(){
 
 
 	for(uint i=0; i<2; i++){
-	//	channel[i]->update();
+		channel[i]->update();
 	}
 }
 const char* System::getIPAddress(){
 	return ip;
 }
-bool System::enableConnection(const char* ssid, const char* password){
+bool System::enableConnection(const char* serverIP, const char* ssid, const char* password){
 	wifiSerial->begin(9600);
 
     if(!wifly.begin(wifiSerial, &Serial)){
@@ -225,7 +225,7 @@ bool System::enableConnection(const char* ssid, const char* password){
 		    wifly.setIpProtocol(WIFLY_PROTOCOL_UDP);
 
 		    // Send UDP packet to this server and port
-		    wifly.setHost("192.168.3.8", 454545);
+		    wifly.setHost(serverIP, 454545);
 
 
 		    wifly.setDeviceID("Wifly-UDP");

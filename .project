@@ -27,11 +27,6 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>EMSSystem</name>
-			<type>2</type>
-			<locationURI>testEMSSystem/EMSSystem</locationURI>
-		</link>
-		<link>
 			<name>SmartEMSChannel</name>
 			<type>2</type>
 			<locationURI>testSmartEMSChannel/SmartEMSChannel</locationURI>
@@ -54,21 +49,21 @@
 		<link>
 			<name>arduino/variant</name>
 			<type>2</type>
-			<locationURI>ArduinoPinPath/standard</locationURI>
+			<locationURI>ArduinoPinPath/eightanaloginputs</locationURI>
 		</link>
 	</linkedResources>
 	<variableList>
 		<variable>
 			<name>ArduinoHardwareLibPath</name>
-			<value>$%7BArduinoPath%7D/hardware/arduino/avr/libraries</value>
+			<value>file:/C:/eclipse/arduino-1.5.2/hardware/arduino/avr/libraries</value>
 		</variable>
 		<variable>
 			<name>ArduinoPinPath</name>
-			<value>$%7BArduinoPath%7D/hardware/arduino/avr/variants</value>
+			<value>file:/C:/eclipse/arduino-1.5.2/hardware/arduino/avr/variants</value>
 		</variable>
 		<variable>
 			<name>ArduinoPlatformPath</name>
-			<value>$%7BArduinoPath%7D/hardware/arduino/avr</value>
+			<value>file:/C:/eclipse/arduino-1.5.2/hardware/arduino/avr</value>
 		</variable>
 	</variableList>
 </projectDescription>

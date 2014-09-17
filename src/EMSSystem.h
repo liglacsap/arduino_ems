@@ -60,7 +60,7 @@ namespace EMS{
 
 		void update();
 
-		bool enableConnection(const char* ssid, const char* password);
+		bool enableConnection(const char* serverIP, const char* ssid, const char* password);
 		const char* getIPAddress();
 	};
 
